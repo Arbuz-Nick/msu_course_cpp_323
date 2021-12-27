@@ -4,10 +4,10 @@
 #include <iostream>
 #include <list>
 #include <mutex>
-#include <random>
 #include <thread>
 #include <vector>
 #include "graph.hpp"
+#include "random.hpp"
 
 namespace {
 
@@ -29,21 +29,6 @@ std::vector<uni_course_cpp::Graph::VertexId> get_unconnected_vertex_ids(
     }
   }
   return to_vertex_ids_no_neighbors;
-}
-
-bool can_generate_vertex(float probability) {
-  std::random_device random_device;
-  std::mt19937 generate(random_device());
-  std::bernoulli_distribution distribution(probability);
-  return distribution(generate);
-}
-
-uni_course_cpp::Graph::VertexId get_random_vertex_id(
-    const std::vector<uni_course_cpp::Graph::VertexId>& vertex_ids) {
-  std::random_device random_device;
-  std::mt19937 generator(random_device());
-  std::uniform_int_distribution<> distribution(0, vertex_ids.size() - 1);
-  return vertex_ids[distribution(generator)];
 }
 
 }  // namespace
@@ -117,8 +102,8 @@ void GraphGenerator::generate_grey_branch(
   if (current_depth == params_.depth()) {
     return;
   }
-  if (!can_generate_vertex(float(params_.depth() - current_depth) /
-                           params_.depth())) {
+  if (!graph_generating::can_generate_vertex(
+          float(params_.depth() - current_depth) / params_.depth())) {
     return;
   }
 
@@ -140,7 +125,7 @@ void GraphGenerator::generate_green_edges(Graph& graph,
                                           std::mutex& mutex) const {
   const auto& vertices = graph.vertices();
   for (const auto& vertex : vertices) {
-    if (can_generate_vertex(k_green_probability)) {
+    if (graph_generating::can_generate_vertex(k_green_probability)) {
       const std::lock_guard<std::mutex> lock(mutex);
       graph.add_edge(vertex.id, vertex.id);
     }
@@ -155,9 +140,10 @@ void GraphGenerator::generate_yellow_edges(Graph& graph,
       const std::lock_guard<std::mutex> lock(mutex);
       const auto to_vertex_ids = get_unconnected_vertex_ids(graph, vertex_id);
       if (to_vertex_ids.size() &&
-          can_generate_vertex(
+          graph_generating::can_generate_vertex(
               float(1) - (float(depth - 1 - current_depth) / (depth - 1)))) {
-        graph.add_edge(vertex_id, get_random_vertex_id(to_vertex_ids));
+        graph.add_edge(vertex_id,
+                       graph_generating::get_random_vertex_id(to_vertex_ids));
       }
     }
   }
@@ -169,9 +155,11 @@ void GraphGenerator::generate_red_edges(Graph& graph, std::mutex& mutex) const {
     if (depth - graph.get_vertex_depth(vertex.id) >= 2) {
       const auto& to_vertex_ids =
           graph.get_vertex_ids_on_depth(graph.get_vertex_depth(vertex.id) + 2);
-      if (to_vertex_ids.size() && can_generate_vertex(k_red_probability)) {
+      if (to_vertex_ids.size() &&
+          graph_generating::can_generate_vertex(k_red_probability)) {
         const std::lock_guard<std::mutex> lock(mutex);
-        graph.add_edge(vertex.id, get_random_vertex_id(to_vertex_ids));
+        graph.add_edge(vertex.id,
+                       graph_generating::get_random_vertex_id(to_vertex_ids));
       }
     }
   }

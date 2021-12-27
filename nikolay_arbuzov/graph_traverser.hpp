@@ -13,6 +13,12 @@ class GraphTraverser {
       const Graph& graph,
       const Graph::VertexId& source_vertex_id,
       const Graph::VertexId& destination_vertex_id) const;
+
+  GraphPath find_fastest_path(
+      const Graph& graph,
+      const Graph::VertexId& source_vertex_id,
+      const Graph::VertexId& destination_vertex_id) const;
+
   std::vector<GraphPath> traverse_graph();
 
  private:

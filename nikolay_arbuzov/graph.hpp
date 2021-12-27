@@ -17,19 +17,23 @@ class Graph {
   };
 
   struct Edge {
+    using Duration = int;
     enum class Color { Grey, Green, Yellow, Red };
     explicit Edge(const EdgeId& _id,
                   const Color& _color,
                   const VertexId& _from_vertex_id,
-                  const VertexId& _to_vertex_id)
+                  const VertexId& _to_vertex_id,
+                  const Duration& _duration)
         : id(_id),
           color(_color),
           from_vertex_id(_from_vertex_id),
-          to_vertex_id(_to_vertex_id) {}
+          to_vertex_id(_to_vertex_id),
+          duration(_duration) {}
     const Color color = Color::Grey;
     EdgeId id = 0;
     const VertexId from_vertex_id = 0;
     const VertexId to_vertex_id = 0;
+    Duration duration = 1;
   };
 
   Vertex& add_vertex();
@@ -46,6 +50,7 @@ class Graph {
   Edge::Color determine_color(const VertexId& from_vertex_id,
                               const VertexId& to_vertex_id) const;
 
+  Edge::Duration determine_duration(const Edge::Color& color) const;
   Edge& add_edge(const VertexId& from_vertex_id, const VertexId& to_vertex_id);
 
   bool has_edge(const EdgeId& edge_id) const;

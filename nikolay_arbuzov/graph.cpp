@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "random.hpp"
 
 namespace {
 constexpr int k_new_vertex_depth = 0;
@@ -90,6 +91,22 @@ Graph::Edge::Color Graph::determine_color(const VertexId& from_vertex_id,
   throw std::runtime_error("Failed to determine color");
 }
 
+Graph::Edge::Duration Graph::determine_duration(
+    const Graph::Edge::Color& color) const {
+  switch (color) {
+    case Graph::Edge::Color::Grey:
+      return get_random_between(1, 2);
+    case Graph::Edge::Color::Green:
+      return get_random_between(1, 2);
+    case Graph::Edge::Color::Yellow:
+      return get_random_between(1, 3);
+    case Graph::Edge::Color::Red:
+      return get_random_between(2, 4);
+    default:
+      throw std::runtime_error("Wrong color");
+  }
+}
+
 Graph::Edge& Graph::add_edge(const VertexId& from_vertex_id,
                              const VertexId& to_vertex_id) {
   assert(has_vertex(from_vertex_id));
@@ -104,8 +121,9 @@ Graph::Edge& Graph::add_edge(const VertexId& from_vertex_id,
   if (from_vertex_id != to_vertex_id)
     adjacency_list_[to_vertex_id].insert(new_edge_id);
 
-  auto& new_edge = edges_.emplace_back(new_edge_id, new_edge_color,
-                                       from_vertex_id, to_vertex_id);
+  auto& new_edge =
+      edges_.emplace_back(new_edge_id, new_edge_color, from_vertex_id,
+                          to_vertex_id, determine_duration(new_edge_color));
 
   if (new_edge_color == Edge::Color::Grey) {
     const auto from_vertex_depth = get_vertex_depth(from_vertex_id);

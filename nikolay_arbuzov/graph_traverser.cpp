@@ -20,8 +20,6 @@ GraphPath GraphTraverser::find_shortest_path(
     const Graph& graph,
     const Graph::VertexId& source_vertex_id,
     const Graph::VertexId& destination_vertex_id) const {
-  std::unordered_map<Graph::VertexId, GraphPath::Distance> distance_map;
-
   const int vertices_count = graph.vertices_id_counter();
   const auto& source_vertex = graph.get_vertex(source_vertex_id);
 
@@ -30,6 +28,9 @@ GraphPath GraphTraverser::find_shortest_path(
 
   std::vector<GraphPath::Distance> distance(vertices_count, INT_MAX);
   distance[source_vertex_id] = 0;
+  std::vector<Graph::Edge::Duration> duration(vertices_count, INT_MAX);
+  duration[source_vertex_id] = 0;
+
   std::queue<Graph::Vertex> vertices_queue;
   vertices_queue.push(source_vertex);
 
@@ -51,12 +52,13 @@ GraphPath GraphTraverser::find_shortest_path(
       const auto& next_vertex = graph.get_vertex(next_vertex_id);
       if (distance[current_vertex.id] + 1 < distance[next_vertex_id]) {
         vertices_queue.push(next_vertex);
+        duration[next_vertex_id] = duration[current_vertex.id] + edge.duration;
         distance[next_vertex_id] = distance[current_vertex.id] + 1;
         all_pathes[next_vertex_id] = all_pathes[current_vertex.id];
         all_pathes[next_vertex_id].push_back(next_vertex_id);
         if (destination_vertex_id == next_vertex_id) {
-          GraphPath r_path(all_pathes[next_vertex_id],
-                           distance[next_vertex_id]);
+          GraphPath r_path(all_pathes[next_vertex_id], distance[next_vertex_id],
+                           duration[next_vertex_id]);
           return r_path;
         }
       }
@@ -64,6 +66,58 @@ GraphPath GraphTraverser::find_shortest_path(
   }
   throw std::runtime_error("Vertices are not connected");
 }
+
+GraphPath GraphTraverser::find_fastest_path(
+    const Graph& graph,
+    const Graph::VertexId& source_vertex_id,
+    const Graph::VertexId& destination_vertex_id) const {
+  const int vertices_count = graph.vertices_id_counter();
+  const auto& source_vertex = graph.get_vertex(source_vertex_id);
+
+  std::vector<Graph::VertexId> vertices(vertices_count, 0);
+  vertices[source_vertex_id] = 1;
+
+  std::vector<GraphPath::Distance> distance(vertices_count, INT_MAX);
+  distance[source_vertex_id] = 0;
+  std::vector<Graph::Edge::Duration> duration(vertices_count, INT_MAX);
+  duration[source_vertex_id] = 0;
+  std::queue<Graph::Vertex> vertices_queue;
+  vertices_queue.push(source_vertex);
+
+  std::vector<std::vector<Graph::VertexId>> all_pathes(vertices_count);
+  std::vector<Graph::VertexId> source_vector{source_vertex_id};
+  all_pathes[source_vertex_id] = source_vector;
+
+  while (!vertices_queue.empty()) {
+    const auto current_vertex = vertices_queue.front();
+    vertices_queue.pop();
+    for (const auto& edge_id : graph.connected_edge_ids(current_vertex.id)) {
+      const auto& edge = graph.get_edge(edge_id);
+      Graph::VertexId next_vertex_id;
+      if (edge.from_vertex_id != current_vertex.id) {
+        next_vertex_id = edge.from_vertex_id;
+      } else if (edge.to_vertex_id != current_vertex.id) {
+        next_vertex_id = edge.to_vertex_id;
+      }
+      const auto& next_vertex = graph.get_vertex(next_vertex_id);
+      if (duration[current_vertex.id] + edge.duration <
+          duration[next_vertex_id]) {
+        vertices_queue.push(next_vertex);
+        duration[next_vertex_id] = duration[current_vertex.id] + edge.duration;
+        distance[next_vertex_id] = distance[current_vertex.id] + 1;
+        all_pathes[next_vertex_id] = all_pathes[current_vertex.id];
+        all_pathes[next_vertex_id].push_back(next_vertex_id);
+        if (destination_vertex_id == next_vertex_id) {
+          GraphPath r_path(all_pathes[next_vertex_id], distance[next_vertex_id],
+                           duration[next_vertex_id]);
+          return r_path;
+        }
+      }
+    }
+  }
+  throw std::runtime_error("Vertices are not connected");
+}
+
 std::vector<GraphPath> GraphTraverser::traverse_graph() {
   std::list<std::function<void()>> jobs;
   std::atomic<int> jobs_done = 0;

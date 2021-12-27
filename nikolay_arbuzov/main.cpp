@@ -5,10 +5,14 @@
 #include <sstream>
 #include <string>
 #include "config.hpp"
+#include "game.hpp"
+#include "game_generator.hpp"
+#include "game_printing.hpp"
 #include "graph.hpp"
 #include "graph_generation_controller.hpp"
 #include "graph_generator.hpp"
 #include "graph_json_printing.hpp"
+#include "graph_path.hpp"
 #include "graph_printing.hpp"
 #include "graph_traversal_controller.hpp"
 #include "graph_traverser.hpp"
@@ -107,11 +111,36 @@ std::string traversing_finished_string(
   return result_stream.str();
 }
 
-std::string game_preparing_string(){
-  return "Game is Preparing...";
+std::string game_preparing_string() {
+  return "Game is Preparing...\n";
 }
 
-std::string 
+std::string game_ready_string(const uni_course_cpp::Game& game) {
+  std::stringstream result;
+  result << "Game is Ready {" << std::endl;
+  result << uni_course_cpp::printing::print_game(game) << std::endl;
+  return result.str();
+}
+
+std::string shortest_path_searching_string() {
+  return "Searching for Shortest Path...\n";
+}
+
+std::string shortest_path_ready_string(
+    const uni_course_cpp::GraphPath& shortest_path) {
+  return "Shortest Path: " +
+         uni_course_cpp::printing::path_to_json(shortest_path) + "\n";
+}
+
+std::string fastest_path_searching_string() {
+  return "Searching for Fastest Path...\n";
+}
+
+std::string fastest_path_ready_string(
+    const uni_course_cpp::GraphPath& fastest_path) {
+  return "Fastest Path: " +
+         uni_course_cpp::printing::path_to_json(fastest_path) + "\n";
+}
 
 void prepare_temp_directory() {
   std::filesystem::create_directory(config::kTempDirectoryPath);
@@ -160,29 +189,15 @@ void traverse_graphs(int threads_count,
 int main() {
   const int depth = handle_depth_input();
   const int new_vertices_count = handle_new_vertices_count_input();
-  const int graphs_count = handle_graphs_count_input();
   const int threads_count = handle_threads_count_input();
-
   prepare_temp_directory();
+
+  auto& logger = uni_course_cpp::Logger::get_logger();
+  logger.log(game_preparing_string());
 
   const auto params =
       uni_course_cpp::GraphGenerator::Params(depth, new_vertices_count);
-  const auto graphs = generate_graphs(params, graphs_count, threads_count);
-  traverse_graphs(threads_count, graphs);
-  return 0;
-}
-
-int main() {
-  const int depth = handle_depth_input();
-  const int new_vertices_count = handle_new_vertices_count_input();
-  const int threads_count = handle_threads_count_input();
-  prepare_temp_directory();
-
-  auto& logger = Logger::get_logger();
-  logger.log(game_preparing_string());
-
-  const auto params = GraphGenerator::Params(depth, new_vertices_count);
-  const auto game_generator = GameGenerator(params);
+  const auto game_generator = uni_course_cpp::GameGenerator(params);
   const auto game = game_generator.generate();
 
   logger.log(game_ready_string(game));
@@ -197,7 +212,8 @@ int main() {
 
   logger.log(fastest_path_ready_string(fastest_path));
 
-  const auto map_json = printing::json::print_map(game.map());
+  const auto map_json =
+      uni_course_cpp::printing::json::print_map(game.get_map());
   write_to_file(map_json, "map.json");
 
   return 0;

@@ -37,8 +37,9 @@ std::string print_edge(const Graph::Edge& edge) {
   result_stream << "      \"vertex_ids\": [";
   result_stream << edge.from_vertex_id << ", " << edge.to_vertex_id;
   result_stream << "]," << std::endl;
-  result_stream << "      \"color\": \"" << print_edge_color(edge.color) << "\""
-                << std::endl;
+  result_stream << "      \"color\": \"" << print_edge_color(edge.color)
+                << "\"," << std::endl;
+  result_stream << "      \"duration\": " << edge.duration << std::endl;
   result_stream << "    }";
 
   return result_stream.str();

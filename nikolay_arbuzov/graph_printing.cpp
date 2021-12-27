@@ -31,16 +31,17 @@ std::string path_to_json(const GraphPath& path) {
       result_stream << ", ";
   }
 
-  result_stream << "], distance: " << path.distance << "}";
+  result_stream << "], distance: " << path.distance;
+  result_stream << ", duration: " << path.duration << "}";
   return result_stream.str();
 }
 
 std::string print_graph(const Graph& graph) {
   std::stringstream result_stream;
   result_stream << "{" << std::endl;
-  result_stream << "  depth: " << graph.depth() << "," << std::endl;
+  result_stream << "    depth: " << graph.depth() << "," << std::endl;
 
-  result_stream << "  vertices: {amount: " << graph.vertices_id_counter()
+  result_stream << "    vertices: {amount: " << graph.vertices_id_counter()
                 << ", ";
   result_stream << "distribution: [";
   for (Graph::Depth depth = 0; depth <= graph.depth(); depth++) {
@@ -51,7 +52,7 @@ std::string print_graph(const Graph& graph) {
   }
   result_stream << "]}," << std::endl;
 
-  result_stream << "  edges: {amount: " << graph.edges_id_counter() << ", ";
+  result_stream << "    edges: {amount: " << graph.edges_id_counter() << ", ";
   result_stream << "distribution: {" << graph.get_edges_distribution() << "}}";
 
   return result_stream.str();
