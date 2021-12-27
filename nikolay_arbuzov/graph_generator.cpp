@@ -134,7 +134,7 @@ void GraphGenerator::generate_green_edges(Graph& graph,
 
 void GraphGenerator::generate_yellow_edges(Graph& graph,
                                            std::mutex& mutex) const {
-  const auto& depth = params_.depth();
+  const auto depth = graph.depth();
   for (Graph::Depth current_depth = 0; current_depth < depth; ++current_depth) {
     for (const auto& vertex_id : graph.get_vertex_ids_on_depth(current_depth)) {
       const std::lock_guard<std::mutex> lock(mutex);
@@ -150,7 +150,7 @@ void GraphGenerator::generate_yellow_edges(Graph& graph,
 }
 
 void GraphGenerator::generate_red_edges(Graph& graph, std::mutex& mutex) const {
-  const auto& depth = params_.depth();
+  const auto depth = graph.depth();
   for (auto& vertex : graph.vertices()) {
     if (depth - graph.get_vertex_depth(vertex.id) >= 2) {
       const auto& to_vertex_ids =
@@ -170,18 +170,15 @@ Graph GraphGenerator::generate() const {
   std::mutex mutex;
 
   generate_grey_edges(graph);
-
   std::thread green_thread(
       [&graph, &mutex, this]() { generate_green_edges(graph, mutex); });
   std::thread yellow_thread(
       [&graph, &mutex, this]() { generate_yellow_edges(graph, mutex); });
   std::thread red_thread(
       [&graph, &mutex, this]() { generate_red_edges(graph, mutex); });
-
   green_thread.join();
   yellow_thread.join();
   red_thread.join();
-
   return graph;
 }
 

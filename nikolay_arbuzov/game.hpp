@@ -5,12 +5,10 @@
 namespace uni_course_cpp {
 class Game {
  public:
+  Game(Graph map, Graph::VertexId princess_position)
+      : map_(std::move(map)), princess_position_(princess_position) {}
   GraphPath find_shortest_path() const;
   GraphPath find_fastest_path() const;
-  void set_map(Graph map) { map_ = std::move(map); }
-  void set_princess_position(Graph::VertexId position) {
-    princess_position_ = std::move(position);
-  }
   const Graph& get_map() const { return map_; }
   const Graph::VertexId& get_knight_position() const {
     return knight_position_;

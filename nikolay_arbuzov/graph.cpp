@@ -107,7 +107,7 @@ Graph::Edge::Duration Graph::determine_duration(
   }
 }
 
-Graph::Edge& Graph::add_edge(const VertexId& from_vertex_id,
+const Graph::Edge& Graph::add_edge(const VertexId& from_vertex_id,
                              const VertexId& to_vertex_id) {
   assert(has_vertex(from_vertex_id));
   assert(has_vertex(to_vertex_id));
@@ -121,7 +121,7 @@ Graph::Edge& Graph::add_edge(const VertexId& from_vertex_id,
   if (from_vertex_id != to_vertex_id)
     adjacency_list_[to_vertex_id].insert(new_edge_id);
 
-  auto& new_edge =
+  const auto& new_edge =
       edges_.emplace_back(new_edge_id, new_edge_color, from_vertex_id,
                           to_vertex_id, determine_duration(new_edge_color));
 

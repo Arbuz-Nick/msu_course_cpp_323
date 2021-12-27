@@ -1,5 +1,6 @@
 #include "random.hpp"
 
+#include <iostream>
 #include <random>
 #include <vector>
 #include "graph.hpp"

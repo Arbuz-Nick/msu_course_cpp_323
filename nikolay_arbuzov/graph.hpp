@@ -51,7 +51,8 @@ class Graph {
                               const VertexId& to_vertex_id) const;
 
   Edge::Duration determine_duration(const Edge::Color& color) const;
-  Edge& add_edge(const VertexId& from_vertex_id, const VertexId& to_vertex_id);
+  const Edge& add_edge(const VertexId& from_vertex_id,
+                       const VertexId& to_vertex_id);
 
   bool has_edge(const EdgeId& edge_id) const;
 
