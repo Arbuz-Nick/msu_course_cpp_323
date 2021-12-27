@@ -108,7 +108,7 @@ Graph::Edge::Duration Graph::determine_duration(
 }
 
 const Graph::Edge& Graph::add_edge(const VertexId& from_vertex_id,
-                             const VertexId& to_vertex_id) {
+                                   const VertexId& to_vertex_id) {
   assert(has_vertex(from_vertex_id));
   assert(has_vertex(to_vertex_id));
   const auto& new_edge_color = determine_color(from_vertex_id, to_vertex_id);
